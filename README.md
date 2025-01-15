@@ -252,4 +252,137 @@ if cv2.waitKey(1) & 0xFF == ord('q'):
 cap.release() cv2.destroyAllWindows() Step 8: Testing and Finalizing: run the code
 
 output:
+
+
 ![Screenshot 2025-01-15 100611](https://github.com/user-attachments/assets/bede2679-0a84-446a-a8d5-cb2fba7747ac)
+
+
+
+
+
+TASK2:
+
+TITLE: OFFICE ATTENDENCE SYSTEM
+
+Step 1: Set Up Google Teachable Machine
+
+1.Open Teachable Machine:
+
+![WhatsApp Image 2025-01-15 at 09 57 52_1ff58b42](https://github.com/user-attachments/assets/1a46827e-41a8-4384-94af-4be652b013c4)
+
+Visit Teachable Machine. Select Image Project and then choose the Face Recognition model.
+
+Select the Image Project option
+
+![WhatsApp Image 2025-01-15 at 09 58 37_87a4d999](https://github.com/user-attachments/assets/45e824dd-6790-4bf7-8ab0-1118033886b5)
+
+Train Your Model:
+
+Create a class for each employee (e.g., "John", "Jane").
+
+![WhatsApp Image 2025-01-15 at 09 59 26_d380a3ea](https://github.com/user-attachments/assets/60c30eb2-e4e6-4b45-ad03-4b46a9d366df)
+
+Capture multiple images for each employee (10–20 images for accuracy).
+
+![Screenshot 2025-01-15 100611](https://github.com/user-attachments/assets/61dcc787-ee2d-44c8-a5dd-aebc20ce1260)
+
+Export the Model:
+![WhatsApp Image 2025-01-15 at 10 02 14_dd3778e5](https://github.com/user-attachments/assets/c6552ab4-6bf4-401f-ad9a-6a84944306be)
+
+Click Export Model after training.
+
+
+Select TensorFlow. Download the Keras .h5 model file.
+
+Step 2: Install Required Software
+
+Install Python:
+
+Download and install Python 3.7+ from python.org.
+
+Install a Code Editor:
+
+Use VS Code or PyCharm for coding.
+
+Set Up a Virtual Environment: Open a terminal or command prompt and run
+
+python -m venv attendance_env
+
+Step 3: Install Necessary Libraries
+
+Run these commands in your terminal: pip install tensorflow pip install numpy pip install opencv-python pip install pillow pip install mysql-connector-python
+
+Step 4: Set Up the Database (DBMS)
+
+Install MySQL Server: Download and install MySQL from mysql.com.
+
+Create a Database: Open MySQL Workbench or the terminal and run CREATE DATABASE office_attendance; USE office_attendance;
+
+CREATE TABLE attendance ( id INT AUTO_INCREMENT PRIMARY KEY, employee_name VARCHAR(50), timestamp DATETIME DEFAULT CURRENT_TIMESTAMP );
+
+Step 5: Write the Python Code
+
+Load the Model Create a script attendance_system.py:
+import tensorflow as tf import cv2 import numpy as np from mysql.connector import connect
+
+Load the trained model
+model = tf.keras.models.load_model('model.h5')
+
+Load the class labels
+with open("labels.txt", "r") as file: class_labels = file.read().splitlines()
+
+Connect to the Database Add this to the script:
+Database connection
+db = connect( host="localhost", user="root",
+password="naveen@123",
+database="office_attendance" ) cursor = db.cursor()
+
+Capture and Process Webcam Input
+
+Open the webcam
+cap = cv2.VideoCapture(0)
+
+while True: ret, frame = cap.read() if not ret: print("Failed to capture image") break
+
+# Preprocess the image
+resized_frame = cv2.resize(frame, (224, 224))
+normalized_frame = (np.array(resized_frame) / 127.5) - 1
+input_frame = np.expand_dims(normalized_frame, axis=0)
+
+# Predict the employee
+predictions = model.predict(input_frame)
+predicted_index = np.argmax(predictions)
+employee_name = class_labels[predicted_index]
+confidence = predictions[0][predicted_index]
+
+# Display prediction on the screen
+cv2.putText(frame, f"{employee_name} ({confidence:.2f})", (10, 30),
+            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+cv2.imshow('Attendance System', frame)
+
+# Record attendance if confidence > 80%
+if confidence > 0.8:
+    cursor.execute("INSERT INTO attendance (employee_name) VALUES (%s)", (employee_name,))
+    db.commit()
+    print(f"Attendance marked for {employee_name}")
+
+# Exit on pressing 'q'
+if cv2.waitKey(1) & 0xFF == ord('q'):
+    break
+cap.release() cv2.destroyAllWindows() db.close()
+
+Step 6: Run the System Ensure the .h5 model file and labels.txt are in the same directory as the Python script. Run the script:
+
+![Screenshot 2025-01-15 101545](https://github.com/user-attachments/assets/388f65be-3e4d-4dd3-a86b-01b863425607)
+
+
+
+Conclusion
+
+Creating an office attendance system using Google Teachable Machine and a DBMS connector combines machine learning and database management to deliver a functional and automated solution. This system enables real-time face recognition to mark attendance, ensuring efficiency and reducing manual errors.
+
+By following the outlined steps:
+
+Model Creation: The Teachable Machine makes it simple to train a robust face recognition model with minimal programming expertise. Integration: Python and TensorFlow allow seamless integration of the model into a practical application. Database Logging: Using MySQL ensures reliable storage and easy retrieval of attendance data. Automation: The webcam feed captures images, processes them in real-time, and logs recognized employees into the database, streamlining the attendance process. This system is scalable and can be enhanced with features like:
+
+Attendance Reports: Generate daily, weekly, or monthly reports. Multi-Device Compatibility: Expand to multiple workstations. Security: Add encryption to protect employee data. By implementing this project, you gain practical experience in combining machine learning, computer vision, and database systems to solve real-world problems efficiently.
